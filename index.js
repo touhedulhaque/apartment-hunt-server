@@ -91,6 +91,22 @@ client.connect(err => {
     })
 
     //........finish bookingCollection........//
+     //...start admin....//
+    app.post("/addAdmin", (req, res) => {
+        const admin = req.body;
+        adminCollection.insertOne(admin).then((result) => {
+            res.send(result.insertedCount > 0);
+        });
+    });
+
+    app.post("/isAdmin", (req, res) => {
+        const email = req.body.email;
+        adminCollection.find({ email: email }).toArray((err, admins) => {
+            res.send(admins.length > 0);
+        });
+    });
+
+    //....finish admin....//
 
     //...start admin....//
 
