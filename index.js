@@ -23,6 +23,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 client.connect(err => {
     const apartmentCollection = client.db("apartmentHunt").collection("apartments");
     const bookingCollection = client.db("apartmentHunt").collection("bookings");
+    const adminCollection = client.db("apartmentHunt").collection("admins");
 
     //to add apartment for rent add rent house page
     app.post('/addApartmentForRent', (req, res) => {
@@ -90,7 +91,22 @@ client.connect(err => {
 
     //........finish bookingCollection........//
 
+    //...start admin....//
+    app.post("/addAdmin", (req, res) => {
+        const admin = req.body;
+        adminCollection.insertOne(admin).then((result) => {
+            res.send(result.insertedCount > 0);
+        });
+    });
 
+    app.post("/isAdmin", (req, res) => {
+        const email = req.body.email;
+        adminCollection.find({ email: email }).toArray((err, admins) => {
+            res.send(admins.length > 0);
+        });
+    });
+
+    //....finish admin....//
 
 
 });
