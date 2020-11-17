@@ -16,31 +16,21 @@ app.use(cors());
 const port = 5000;
 
 app.get('/', (req, res) => {
-    res.send("Hi from db,this working very good")
+    res.send("welcome to apartment hunt backend")
 })
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect(err => {
     const apartmentCollection = client.db("apartmentHunt").collection("apartments");
     const bookingCollection = client.db("apartmentHunt").collection("bookings");
+    const rentedApartmentCollection = client.db("apartmentHunt").collection("rentedApartments");
     const adminCollection = client.db("apartmentHunt").collection("admins");
 
     //to add apartment for rent add rent house page
-    app.post('/addApartmentForRent', (req, res) => {
-        const file = req.files.file;
-        const name = req.body.name;
-        const description = req.body.description;
-        const newImg = file.data;
-        const encImg = newImg.toString("base64");
-
-        var image = {
-            contentType: file.mimetype,
-            size: file.size,
-            img: Buffer.from(encImg, "base64"),
-        };
-        apartmentCollection
-            .insertOne({ name, description, image })
-            .then((result) => {
+    app.post('/addApartment', (req, res) => {
+        const apartment = req.body;
+        apartmentCollection.insertOne(apartment)
+            .then(result => {
                 res.send(result.insertedCount > 0)
             })
     })
@@ -52,16 +42,27 @@ client.connect(err => {
                 res.send(documents)
             })
     })
+    ///........finish apartment section...//
+
+    //.....start rentedApartmentCollection.....//
+    //.....add rented apartment...///
+    app.post('/addRentedApartment', (req, res) => {
+        const rentedApartment = req.body;
+        rentedApartmentCollection.insertOne(rentedApartment)
+            .then(result => {
+                res.send(result.insertedCount > 0)
+            })
+    })
 
     //individual apartment rent list by email
     app.get('/apartmentRentlistByEmail', (req, res) => {
         email = req.query.email
-        apartmentCollection.find({ email })
+        rentedApartmentCollection.find({ email })
             .toArray((err, documents) => {
                 res.send(documents);
             })
     })
-    //.........finish apartmentCollection.......//
+    //.........finish rentedApartmentCollection.......//
 
     //to add booking from individual apartment booking page
     app.post('/addBooking', (req, res) => {
@@ -73,7 +74,7 @@ client.connect(err => {
     })
 
     // to show all bookings in a booking list page
-    app.get('/bookings', (req, res) => {
+    app.get('/allBookings', (req, res) => {
         bookingCollection.find({})
             .toArray((err, documents) => {
                 res.send(documents)
@@ -92,6 +93,7 @@ client.connect(err => {
     //........finish bookingCollection........//
 
     //...start admin....//
+
     app.post("/addAdmin", (req, res) => {
         const admin = req.body;
         adminCollection.insertOne(admin).then((result) => {
